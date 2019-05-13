@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -21,14 +22,28 @@ type Author struct {
 	Lastname  string `json:"lastname"`
 }
 
+// Init books var as a slice Book struct
+// Slice is a var length array bc arrays in Golang have a defined length
+var books []Book
+
 // Get All Books
 func getBooks(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(books)
 }
 
 // Get Single Book
 func getBook(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r) // Get params
+	// Loop through books and find with id
+	for _, item := range books {
+		if item.ID == params["id"] {
+			json.newEncoder(w).Encode(item)
+			return
+		}
+	}
+	json.NewEncoder(w).Encode(&Book{})
 }
 
 // Create a New Book
@@ -49,6 +64,10 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// Init router
 	r := mux.NewRouter()
+
+	// Mock Data -  TODO implement DB
+	books = append(books, Book{ID: "1", Isbn: "448743", Title: "Book One", Author: &Author{Firstname: "John", Lastname: "Doe"}})
+	books = append(books, Book{ID: "2", Isbn: "847564", Title: "Book Two", Author: &Author{Firstname: "Steve", Lastname: "Smith"}})
 
 	// Route Handlers / Endpoints
 	r.HandleFunc("/api/books", getBooks).Methods("GET")
